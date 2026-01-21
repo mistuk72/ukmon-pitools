@@ -108,6 +108,7 @@ def monitorLogFile(camloc, rmscfg):
                     logfs.sort(key=lambda x: os.path.getmtime(x))
                     logf = logfs[-1]
                     loglines.close()
+                    raise StopIteration
                 else:
                     if "Data directory" in line or 'New data directory' in line: 
                         newcapdir = line.split(' ')[5].strip()
