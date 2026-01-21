@@ -28,6 +28,7 @@ from RMS.Formats.FTPdetectinfo import readFTPdetectinfo
 log = logging.getLogger("ukmonlogger")
 logging.getLogger("paramiko").setLevel(logging.WARNING)
 
+
 def readKeyFile(filename, inifvals):
     if not os.path.isfile(filename):
         log.error('Keyfile {} not downloaded. Check ssh key and station location with ukmon team.'.format(filename))
