@@ -90,7 +90,7 @@ def monitorLogFile(camloc, rmscfg):
                 logf = newlogf
                 log.info('Now monitoring {}'.format(logf))
             lis = open(logf,'r').readlines()
-            dd = [li for li in lis if 'Data directory' in li]
+            dd = [li for li in lis if 'Data directory' in li or 'New data directory' in li]
             if len(dd) > 0:
                 capdir = dd[0].split(' ')[5].strip()
                 #log.info('Capture dir is {}'.format(capdir))
@@ -120,14 +120,18 @@ def monitorLogFile(camloc, rmscfg):
 
                     nowtm = datetime.datetime.now(datetime.timezone.utc)
                     if "detected meteors" in line and ": 0" not in line and "TOTAL" not in line:
+                        log.info('meteor detected')
                         if capdir != '':
                             ffname = line.split(' ')[3]
-                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S')
+                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S').replace(tzinfo=datetime.timezone.utc)
                             if (nowtm - ftime).seconds < MAXAGE:
                                 log.info('uploading {}'.format(ffname))
                                 uploadOneEvent(capdir, ffname, cfg, keys, camloc)
                             else:
+                                log.info(f'too long ago: {(nowtm - ftime).seconds}')
                                 pass
+                        else:
+                            log.warning('cap dir not set')
 
         except StopIteration:
             # reload the latest log
