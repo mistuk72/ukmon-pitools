@@ -122,7 +122,7 @@ def monitorLogFile(camloc, rmscfg):
                     if "detected meteors" in line and ": 0" not in line and "TOTAL" not in line:
                         if capdir != '':
                             ffname = line.split(' ')[3]
-                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S')
+                            ftime = datetime.datetime.strptime(ffname[10:25], '%Y%m%d_%H%M%S').replace(tzinfo=datetime.timezone.utc)
                             if (nowtm - ftime).seconds < MAXAGE:
                                 log.info('uploading {}'.format(ffname))
                                 uploadOneEvent(capdir, ffname, cfg, keys, camloc)
