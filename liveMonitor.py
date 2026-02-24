@@ -14,7 +14,7 @@ from ukmonPostProc import setupLogging
 
 log = logging.getLogger("ukmonlogger")
 
-timetowait = 30 # seconds to wait for a new line before deciding the log is stale
+timetowait = 300 # seconds to wait for a new line before deciding the log is stale
 
 # Images created more than this many seconds ago won't be uploaded. Prevents reuploads. 
 MAXAGE=int(os.getenv('UKMMAXAGE', default='1800')) 
@@ -100,7 +100,7 @@ def monitorLogFile(camloc, rmscfg):
             loglines = follow(logf, logf_ino)
 
             for line in loglines:
-                nowtm = datetime.datetime.utcnow()
+                nowtm = datetime.datetime.now(datetime.timezone.utc)
                 if line == 'log stale' or line == 'log rolled':
                     #log.info(line)
 
@@ -108,6 +108,7 @@ def monitorLogFile(camloc, rmscfg):
                     logfs.sort(key=lambda x: os.path.getmtime(x))
                     logf = logfs[-1]
                     loglines.close()
+                    raise StopIteration
                 else:
                     if "Data directory" in line or 'New data directory' in line: 
                         newcapdir = line.split(' ')[5].strip()
@@ -117,7 +118,7 @@ def monitorLogFile(camloc, rmscfg):
                             capdir = newcapdir
                             log.info('Latest capture dir is {}'.format(capdir))
 
-                    nowtm = datetime.datetime.utcnow()
+                    nowtm = datetime.datetime.now(datetime.timezone.utc)
                     if "detected meteors" in line and ": 0" not in line and "TOTAL" not in line:
                         if capdir != '':
                             ffname = line.split(' ')[3]
@@ -126,15 +127,15 @@ def monitorLogFile(camloc, rmscfg):
                                 log.info('uploading {}'.format(ffname))
                                 uploadOneEvent(capdir, ffname, cfg, keys, camloc)
                             else:
-                                #log.info('skipping {} as too old'.format(ffname))
                                 pass
-            #log.info('no more lines, rereading {}'.format(logf))
+
         except StopIteration:
-            log.info('restarting to read {}'.format(logf))
+            # reload the latest log
             pass
         except Exception as e:
             log.info('Problem reading RMS log: {} - will retry'.format(logf))
             log.info(e, exc_info=True)
+
             # reload the RMS config file in case its been updated
             cfg = cr.parse(os.path.expanduser(rmscfg))
             pass

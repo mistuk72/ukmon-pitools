@@ -19,6 +19,7 @@ import Utils.GenerateMP4s as gmp4
 import RMS.ConfigReader as cr
 from importlib import import_module as impmod
 import logging
+import logging.handlers
 import datetime
 
 from uploadToArchive import uploadToArchive, readIniFile
